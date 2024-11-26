@@ -1,37 +1,19 @@
 package main
 
 import (
-	"bufio"
 	"fmt"
-	"net"
-	"strings"
+	"net/http"
 )
 
 func main() {
-	ls, err := net.Listen("tcp", ":5000")
-	if err != nil {
-		panic(err)
-	}
-	defer ls.Close()
 
-	for {
-		conn, err := ls.Accept()
-		if err != nil {
-			panic(err)
-		}
-		go func(con net.Conn) {
-			for {
-				data, _ := bufio.NewReader(con).ReadString('\n')
+	handler := Handler{}
+	http.ListenAndServe(":5000", handler)
+	fmt.Println("Servidor rodando na porta 5000")
+}
 
-				if strings.Contains(data, "quit") {
-					break
-				}
-				fmt.Println("data recieved:", data)
-				con.Write([]byte("message received \n"))
-			}
+type Handler struct{}
 
-			con.Close()
-			fmt.Println("connection closed")
-		}(conn)
-	}
+func (h Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	w.Write([]byte("Hello World"))
 }
